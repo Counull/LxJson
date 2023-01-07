@@ -46,9 +46,59 @@ TEST(Parse, ParseFalse)
     ASSERT_EQ(lept_result::LEPT_PARSE_ROOT_NOT_SINGULAR, v.parse(" \t \n \r \r\n  false \t\rasd"));
 }
 
+void TestNumber(double except, const std::string& json)
+{
+
+    lept_value v;
+    ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
+    ASSERT_EQ(lept_type::LEPT_NUMBER, v.getType());
+    ASSERT_DOUBLE_EQ(except, v.getNum());
+}
+
+TEST(Parse, ParseNum)
+{
+    lept_value v;
+
+    TestNumber(0.0, "  0");
+      TestNumber(0.0, "-0");
+      TestNumber(0.0, "-0.0");
+
+      TestNumber(1.0, "1");
+      TestNumber(-1.0, "-1");
+      TestNumber(1.5234, "1.5234");
+      TestNumber(-1.5234, "-1.5234");
+
+      TestNumber(1E10, "1E10");
+      TestNumber(-1E10, "-1E10");
+      TestNumber(1e10, "1e10");
+      TestNumber(-1e10, "-1e10");
+
+      TestNumber(1E+10, "1E+10");
+      TestNumber(-1E+10, "-1E+10");
+      TestNumber(1E-10, "1E-10");
+      TestNumber(-1E-10, "-1E-10");
+
+      TestNumber(1E+10, "1E+10");
+      TestNumber(-1E+10, "-1E+10");
+      TestNumber(1E-10, "1E-10");
+      TestNumber(-1E-10, "-1E-10");
+
+      TestNumber(1.234E+10, "1.234E+10");
+      TestNumber(1.234E-10, "1.234E-10"); 
+}
+
 TEST(Parse, ParseException)
 {
     lept_value v;
     v.setType(lept_type::LEPT_TRUE);
-    ASSERT_EQ(lept_result::LEPT_PARSE_EXPECT_VALUE, v.parse("          \r \0"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_EXPECT_VALUE, v.parse("          \r \0 "));
+
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("+0"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("+1"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse(".123"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("1."));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("INF"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("inf"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("NAN"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("nan"));
 }
