@@ -60,7 +60,6 @@ lept_result lept_context::parse_expr(lept_value& value)
     }
 
     for (size_t i = 0; i < STRLEN; i++) {
-
         if (E[i] != json[i]) {
             return lept_result::LEPT_PARSE_INVALID_VALUE;
         }
@@ -80,54 +79,39 @@ lept_result lept_context::parse_expr(lept_value& value)
 lept_result LxJson::lept_context::parse_number(lept_value& value)
 {
 
-    size_t validOffset = 0;
-    
-    if (json[validOffset] == '-')
-        ++validOffset;
-    if (json[validOffset] == '0')
-        ++validOffset;
+    auto p = json.data();
+    if (*p == '-')
+        p++;
+    if (*p == '0')
+        p++;
     else {
-        if ((!isdigit(json[validOffset]) || json[validOffset] == '0'))
+        if (*p == '0' || !isdigit(*p))
             return lept_result::LEPT_PARSE_INVALID_VALUE;
-        for (++validOffset; isdigit(json[validOffset]); validOffset++) { }
+        for (p++; isdigit(*p); p++)
+            ;
     }
-
-    if (json[validOffset] == '.') {
-        ++validOffset;
-        if (!isdigit(json[validOffset]))
+    if (*p == '.') {
+        p++;
+        if (!isdigit(*p))
             return lept_result::LEPT_PARSE_INVALID_VALUE;
-        for (validOffset++; isdigit(json[validOffset]); validOffset++) { }
+        for (p++; isdigit(*p); p++)
+            ;
     }
-    if ((json[validOffset] == 'e' || json[validOffset] == 'E')) {
-        ++validOffset;
-        if ((json[validOffset] == '+' || json[validOffset] == '-'))
-            ++validOffset;
-        if (!isdigit(json[validOffset]))
+    if (*p == 'e' || *p == 'E') {
+        p++;
+        if (*p == '+' || *p == '-')
+            p++;
+        if (!isdigit(*p))
             return lept_result::LEPT_PARSE_INVALID_VALUE;
-        for (++validOffset; isdigit(json[validOffset]); ++validOffset) { }
+        for (p++; isdigit(*p); p++)
+            ;
     }
-
-    /* if (json.starts_with('.') || json.starts_with('+')) {
-        return lept_result::LEPT_PARSE_INVALID_VALUE;
-    }
-
-    size_t validOffset = 0;
-    for (size_t i = 0; i < json.size(); i++) {
-        auto c = json[i];
-        if (isspace(c)) {
-            break;
-        }
-        ++validOffset;
-    }
-
-    if (validOffset == 0 || json[validOffset - 1] == '.') {
-        return lept_result::LEPT_PARSE_INVALID_VALUE;
-    }*/
 
     double d;
-    auto ret = std::from_chars(json.data(), json.data() + validOffset, d);
+    auto ret = std::from_chars(json.data(), p, d);
+
     if (ret.ec != std::errc {}) {
-        if (ret.ec == std::errc::result_out_of_range) {
+        if (ret.ec == std::errc::result_out_of_range && (d == HUGE_VAL || d == -HUGE_VAL)) {
             return lept_result::LEPT_PARSE_NUMBER_TOO_BIG;
         }
 
@@ -136,6 +120,7 @@ lept_result LxJson::lept_context::parse_number(lept_value& value)
 
     value.setNum(d);
     value.setType(lept_type::LEPT_NUMBER);
-    json.remove_prefix(validOffset);
+    auto offset = p - json.data();
+    json.remove_prefix(offset);
     return lept_result::LEPT_PARSE_OK;
 }

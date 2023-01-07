@@ -97,9 +97,9 @@ TEST(Parse, ParseException)
     ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("+1"));
     ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse(".123"));
     ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("1."));
-    /*   ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("INF"));
-      ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("inf"));
-      ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("NAN"));
-      ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("nan")); */
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("INF"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("inf"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("NAN"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("nan"));
     ASSERT_EQ(lept_result::LEPT_PARSE_NUMBER_TOO_BIG, v.parse("-1.7976931348623157e+30800"));
 }
