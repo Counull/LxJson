@@ -52,14 +52,12 @@ lept_result lept_context::parse_expr(lept_value& value)
     if (json.length() < STRLEN) {
         return lept_result::LEPT_PARSE_INVALID_VALUE;
     }
-
-    auto valIntr = json.cbegin();
+  
     for (size_t i = 0; i < STRLEN; i++) {
 
-        if (E[i] != *valIntr) {
+        if (E[i] != json[i]) {
             return lept_result::LEPT_PARSE_INVALID_VALUE;
         }
-        valIntr++;
     }
     json.remove_prefix(STRLEN);
     if constexpr (E == NULL_EXPR) {
