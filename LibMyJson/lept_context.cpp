@@ -78,26 +78,23 @@ lept_result lept_context::parse_expr(lept_value& value)
 lept_result LxJson::lept_context::parse_number(lept_value& value)
 {
 
-    if (json.starts_with('.') || json.starts_with('+')
-        || isalpha(json.front())) {
+    if (json.starts_with('.') || json.starts_with('+')) {
         return lept_result::LEPT_PARSE_INVALID_VALUE;
     }
 
-    double d;
     size_t validOffset = 0;
     for (size_t i = 0; i < json.size(); i++) {
         auto c = json[i];
-        if (!isdigit(c) && c != '.' && c != '-' && c != '+') {
-            if (!isalpha(c) || toupper(c) != 'E') {
-                break;
-            }
+        if (isspace(c)) {
+            break;
         }
         ++validOffset;
     }
 
-    if (json[validOffset - 1] == '.') {
+    if (validOffset == 0 || json[validOffset - 1] == '.') {
         return lept_result::LEPT_PARSE_INVALID_VALUE;
     }
+    double d;
     auto ret = std::from_chars(json.data(), json.data() + validOffset, d);
     if (ret.ec == std::errc::invalid_argument) {
         return lept_result::LEPT_PARSE_INVALID_VALUE;
