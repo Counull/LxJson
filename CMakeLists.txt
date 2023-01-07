@@ -3,6 +3,8 @@ project(MyJson VERSION 0.1.0)
 
 include(CheckCXXCompilerFlag)
 
+
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -ast-print -fsyntax-only")
 if(NOT CMAKE_BUILD_TYPE)
   message("Build Type not set, defaulting to Debug...")
   set(CMAKE_BUILD_TYPE Debug)

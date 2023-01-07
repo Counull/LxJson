@@ -2,6 +2,8 @@
 #define LEPT_ENUM_H
 
 #pragma once
+namespace LxJson {
+
 enum class lept_type {
     LEPT_NULL,
     LEPT_FALSE,
@@ -18,4 +20,5 @@ enum class lept_result {
     LEPT_PARSE_INVALID_VALUE,
     LEPT_PARSE_ROOT_NOT_SINGULAR
 };
+}
 #endif
