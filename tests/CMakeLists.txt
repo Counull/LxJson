@@ -17,6 +17,8 @@ target_link_libraries(GTest::GTest INTERFACE gtest_main)
 add_executable(${PROJECT_NAME} test.cpp)
 add_dependencies(${PROJECT_NAME} LibMyJson)
 
+
+
 target_include_directories(${PROJECT_NAME} PUBLIC "../LibMyJson")
 # 把GTest和被测函数都链接到 可执行文件 上
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::GTest LibMyJson)

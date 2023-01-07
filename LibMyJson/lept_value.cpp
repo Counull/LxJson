@@ -15,5 +15,5 @@ lept_result lept_value::parse(const std::string& json)
     context.parse_whithspace();
 
     return context.parse_value(*this);
-    ;
+
 }
