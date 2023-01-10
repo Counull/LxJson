@@ -3,8 +3,7 @@ project(MyJson VERSION 0.1.0)
 
 include(CheckCXXCompilerFlag)
 
-
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -ast-print -fsyntax-only")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -ast-print -fsyntax-only")
 if(NOT CMAKE_BUILD_TYPE)
   message("Build Type not set, defaulting to Debug...")
   set(CMAKE_BUILD_TYPE Debug)
@@ -13,9 +12,13 @@ endif()
 message("Build type:" ${CMAKE_BUILD_TYPE})
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstandalone-debug")
+
   check_cxx_compiler_flag("-fstandalone-debug" COMPILER_SUPPORTS_DEBUG)
-  message("Set debug flags " ${COMPILER_SUPPORTS_DEBUG})
+  if(COMPILER_SUPPORTS_DEBUG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstandalone-debug")
+     message("Set debug flags " ${COMPILER_SUPPORTS_DEBUG})
+  endif()
+
 endif()
 
 check_cxx_compiler_flag("-std=c++2b" COMPILER_SUPPORTS_CXX23)

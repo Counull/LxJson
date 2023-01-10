@@ -5,9 +5,8 @@
 namespace LxJson {
 
 enum class lept_type {
+    LEPT_BOOLEAN ,
     LEPT_NULL,
-    LEPT_FALSE,
-    LEPT_TRUE,
     LEPT_NUMBER,
     LEPT_STRING,
     LEPT_ARRAY,

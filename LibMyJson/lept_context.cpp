@@ -1,13 +1,12 @@
 #include "lept_context.h"
 #include <cctype>
 #include <charconv>
+#include <cmath>
 #include <cstddef>
-#include <ctype.h>
 #include <iostream>
 #include <string.h>
 #include <string_view>
 #include <system_error>
-#include <vcruntime.h>
 
 using namespace std::literals;
 using namespace LxJson;
@@ -68,9 +67,11 @@ lept_result lept_context::parse_expr(lept_value& value)
     if constexpr (E == NULL_EXPR) {
         value.setType(lept_type::LEPT_NULL);
     } else if constexpr (E == TRUE) {
-        value.setType(lept_type::LEPT_TRUE);
+        value.setType(lept_type::LEPT_BOOLEAN);
+        value.setBoolean(true);
     } else if constexpr (E == FALSE) {
-        value.setType(lept_type::LEPT_FALSE);
+        value.setType(lept_type::LEPT_BOOLEAN);
+        value.setBoolean(false);
     }
     json.remove_prefix(STRLEN);
     return lept_result::LEPT_PARSE_OK;
@@ -118,8 +119,9 @@ lept_result LxJson::lept_context::parse_number(lept_value& value)
         return lept_result::LEPT_PARSE_INVALID_VALUE;
     }
 
-    value.setNum(d);
     value.setType(lept_type::LEPT_NUMBER);
+    value.setNum(d);
+
     auto offset = p - json.data();
     json.remove_prefix(offset);
     return lept_result::LEPT_PARSE_OK;
