@@ -105,6 +105,20 @@ TEST(Parse, ParseException)
     ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("nan"));
     ASSERT_EQ(lept_result::LEPT_PARSE_NUMBER_TOO_BIG, v.parse("-1.7976931348623157e+30800"));
 }
+void testStr(const std::string& except, const std::string& json)
+{
+    lept_value v;
+    ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
+    ASSERT_EQ(lept_type::LEPT_STRING, v.getType());
+    ASSERT_STREQ(except.data(), v.getValue<std::string>().data());
+}
+TEST(Parse, ParseString)
+{
+    testStr("abc", "\"abc\"");
+    testStr("abc", "    \"abc\"");
+    testStr("  abc  ", "    \"  abc  \"");
+    testStr("  a b c  ", "    \"  a b c  \"");
+}
 
 TEST(Std, StdVarent)
 {

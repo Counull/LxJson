@@ -1,5 +1,6 @@
 #include "lept_context.h"
 
+#include <algorithm>
 #include <cctype>
 #include <charconv>
 #include <cmath>
@@ -7,6 +8,7 @@
 #include <iostream>
 #include <stack>
 #include <string.h>
+#include <string>
 #include <string_view>
 #include <system_error>
 #include <vcruntime.h>
@@ -48,6 +50,8 @@ lept_result lept_context::parse_value(lept_value& value)
     case 'f':
         return parse_expr<FALSE>(value);
         break;
+    case '\"':
+        return parse_string(value);
     default:
         return parse_number(value);
     }
@@ -131,21 +135,17 @@ lept_result LxJson::lept_context::parse_number(lept_value& value)
 lept_result LxJson::lept_context::parse_string(lept_value& value)
 {
     assert(json.front() == '\"');
-    std::string_view view(json);
-    view.remove_prefix(1);
-    size_t p = 0;
-    for (auto c : json) {
-
-        switch (c) {
-
-        case '\"':
-            view.remove_suffix(view.length() - p);
-            value.setValue(view.data());
-            json.remove_prefix(++p);
+    size_t p = 1;
+    auto begin = ++json.begin();
+    for (auto iter = begin; iter != json.end(); iter++) {
+        p++;
+        if (*iter == '\"') {
+            std::string strbuffer(begin, iter);
+            value.setValue(std::move(strbuffer));
+            json.remove_prefix(p);
             return lept_result::LEPT_PARSE_OK;
-        case '\0':
-            return lept_result::LEPT_PARSE_MISS_QUOTATION_MARK;
         }
-        ++p;
     }
+
+    return lept_result::LEPT_PARSE_MISS_QUOTATION_MARK;
 }

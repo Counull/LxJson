@@ -63,7 +63,7 @@ public:
     template <typename Type>
     auto getValue()
     {
-        return std::get<Type>();
+        return std::get<Type>(v);
     }
 
 private:
