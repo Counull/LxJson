@@ -1,12 +1,15 @@
 #include "lept_context.h"
+
 #include <cctype>
 #include <charconv>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <stack>
 #include <string.h>
 #include <string_view>
 #include <system_error>
+#include <vcruntime.h>
 
 using namespace std::literals;
 using namespace LxJson;
@@ -65,13 +68,12 @@ lept_result lept_context::parse_expr(lept_value& value)
     }
 
     if constexpr (E == NULL_EXPR) {
-        value.setType(lept_type::LEPT_NULL);
+        value.setValue(nullptr);
     } else if constexpr (E == TRUE) {
-        value.setType(lept_type::LEPT_BOOLEAN);
-        value.setBoolean(true);
+        value.setValue(true);
     } else if constexpr (E == FALSE) {
-        value.setType(lept_type::LEPT_BOOLEAN);
-        value.setBoolean(false);
+
+        value.setValue(false);
     }
     json.remove_prefix(STRLEN);
     return lept_result::LEPT_PARSE_OK;
@@ -119,10 +121,31 @@ lept_result LxJson::lept_context::parse_number(lept_value& value)
         return lept_result::LEPT_PARSE_INVALID_VALUE;
     }
 
-    value.setType(lept_type::LEPT_NUMBER);
-    value.setNum(d);
+    value.setValue(d);
 
     auto offset = p - json.data();
     json.remove_prefix(offset);
     return lept_result::LEPT_PARSE_OK;
+}
+
+lept_result LxJson::lept_context::parse_string(lept_value& value)
+{
+    assert(json.front() == '\"');
+    std::string_view view(json);
+    view.remove_prefix(1);
+    size_t p = 0;
+    for (auto c : json) {
+
+        switch (c) {
+
+        case '\"':
+            view.remove_suffix(view.length() - p);
+            value.setValue(view.data());
+            json.remove_prefix(++p);
+            return lept_result::LEPT_PARSE_OK;
+        case '\0':
+            return lept_result::LEPT_PARSE_MISS_QUOTATION_MARK;
+        }
+        ++p;
+    }
 }

@@ -5,7 +5,7 @@
 namespace LxJson {
 
 enum class lept_type {
-    LEPT_BOOLEAN ,
+    LEPT_BOOLEAN,
     LEPT_NULL,
     LEPT_NUMBER,
     LEPT_STRING,
@@ -18,6 +18,7 @@ enum class lept_result {
     LEPT_PARSE_EXPECT_VALUE,
     LEPT_PARSE_INVALID_VALUE,
     LEPT_PARSE_NUMBER_TOO_BIG,
+    LEPT_PARSE_MISS_QUOTATION_MARK,
     LEPT_PARSE_ROOT_NOT_SINGULAR
 };
 }

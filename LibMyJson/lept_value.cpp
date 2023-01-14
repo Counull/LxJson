@@ -15,7 +15,7 @@ lept_result lept_value::parse(const std::string& json)
 {
 
     lept_context context(json);
-    setType(lept_type::LEPT_NULL);
+  
     context.parse_whithspace();
 
     auto ret = context.parse_value(*this);

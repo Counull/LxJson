@@ -2,7 +2,8 @@
 #include "lept_enum.h"
 #include "lept_value.h"
 #include <gtest/gtest.h>
-
+#include <string>
+using namespace std::string_literals;
 using namespace LxJson;
 
 TEST(Parse, ParseNull)
@@ -38,6 +39,7 @@ TEST(Parse, ParseFalse)
     lept_value v;
 
     ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse("false"));
+
     ASSERT_EQ(false, v.getValue<lept_type::LEPT_BOOLEAN>());
     ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(" \t \n \r \r\n  false"));
     ASSERT_EQ(false, v.getValue<lept_type::LEPT_BOOLEAN>());
@@ -102,4 +104,19 @@ TEST(Parse, ParseException)
     ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("NAN"));
     ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("nan"));
     ASSERT_EQ(lept_result::LEPT_PARSE_NUMBER_TOO_BIG, v.parse("-1.7976931348623157e+30800"));
+}
+
+TEST(Std, StdVarent)
+{
+    lept_value v;
+    v.setValue(123.5f);
+    ASSERT_EQ(v.getType(), lept_type::LEPT_NUMBER);
+    v.setValue(123.5);
+    ASSERT_EQ(v.getType(), lept_type::LEPT_NUMBER);
+    v.setValue("123213"s);
+    ASSERT_EQ(v.getType(), lept_type::LEPT_STRING);
+    ASSERT_EQ(v.getValue<lept_type::LEPT_STRING>(), "123213"s);
+    v.setValue("123213");
+    ASSERT_EQ(v.getType(), lept_type::LEPT_STRING);
+    ASSERT_EQ(v.getValue<lept_type::LEPT_STRING>(), "123213"s);
 }
