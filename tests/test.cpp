@@ -104,6 +104,8 @@ TEST(Parse, ParseException)
     ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("NAN"));
     ASSERT_EQ(lept_result::LEPT_PARSE_INVALID_VALUE, v.parse("nan"));
     ASSERT_EQ(lept_result::LEPT_PARSE_NUMBER_TOO_BIG, v.parse("-1.7976931348623157e+30800"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_QUOTATION_MARK, v.parse("\"ab\0c\""));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_QUOTATION_MARK, v.parse("\"abc"));
 }
 void testStr(const std::string& except, const std::string& json)
 {
@@ -115,6 +117,7 @@ void testStr(const std::string& except, const std::string& json)
 TEST(Parse, ParseString)
 {
     testStr("abc", "\"abc\"");
+    testStr("", "\"\"");
     testStr("abc", "    \"abc\"");
     testStr("  abc  ", "    \"  abc  \"");
     testStr("  a b c  ", "    \"  a b c  \"");
