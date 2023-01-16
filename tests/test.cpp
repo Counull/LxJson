@@ -121,6 +121,7 @@ TEST(Parse, ParseString)
     testStr("abc", "    \"abc\"");
     testStr("  abc  ", "    \"  abc  \"");
     testStr("  a b c  ", "    \"  a b c  \"");
+    testStr("  a b\r\n\t\"\b\f/ \\  c  ", "    \"  a b\\r\\n\\t\\\"\\b\\f\\/ \\\\  c  \"");
 }
 
 TEST(Std, StdVarent)

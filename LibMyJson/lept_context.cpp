@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <memory>
 #include <stack>
 #include <string.h>
 #include <string>
@@ -137,13 +138,62 @@ lept_result LxJson::lept_context::parse_string(lept_value& value)
     assert(json.front() == '\"');
     size_t p = 1;
     auto begin = ++json.begin();
+    std::unique_ptr<std::string> strBuffer;
+
     for (auto iter = begin; iter != json.end(); iter++) {
+        char escape = '\0';
         p++;
-        if (*iter == '\"') {
-            std::string strbuffer(begin, iter);
-            value.setValue(std::move(strbuffer));
+        switch (*iter) {
+        case '\\':
+            p++;
+
+            switch (*++iter) {
+            case '\"':
+                escape = '\"';
+                break;
+            case '\\':
+                escape = '\\';
+                break;
+            case '/':
+                escape = '/';
+                break;
+            case 'b':
+                escape = '\b';
+                break;
+            case 'f':
+                escape = '\f';
+                break;
+            case 'n':
+                escape = '\n';
+                break;
+            case 'r':
+                escape = '\r';
+                break;
+            case 't':
+                escape = '\t';
+                break;
+            default:
+                return lept_result::LEPT_PARSE_INVALID_STRING_ESCAPE;
+            }
+            break;
+        case '\"':
+            if (!strBuffer) {
+                strBuffer = std::make_unique<std::string>(std::string { begin, iter });
+            }
+            std::cout << strBuffer << std::endl;
+            value.setValue(std::move(*strBuffer));
             json.remove_prefix(p);
             return lept_result::LEPT_PARSE_OK;
+        }
+        if (!strBuffer) {
+            strBuffer = std::make_unique<std::string>(std::string { begin, iter });
+        }
+        if (strBuffer) {
+            if (escape != '\0') {
+                strBuffer->push_back(escape);
+                escape = '\0';
+            } else
+                strBuffer->push_back(*iter);
         }
     }
 
