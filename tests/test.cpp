@@ -3,6 +3,7 @@
 #include "lept_value.h"
 #include <gtest/gtest.h>
 #include <string>
+#include <utility>
 using namespace std::string_literals;
 using namespace LxJson;
 
@@ -122,6 +123,25 @@ TEST(Parse, ParseString)
     testStr("  abc  ", "    \"  abc  \"");
     testStr("  a b c  ", "    \"  a b c  \"");
     testStr("  a b\r\n\t\"\b\f/ \\  c  ", "    \"  a b\\r\\n\\t\\\"\\b\\f\\/ \\\\  c  \"");
+}
+
+void testArray(const std::string& json, JsonArray& array)
+{
+    lept_value v;
+    ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
+    auto type = v.getType();
+    ASSERT_EQ(lept_type::LEPT_ARRAY, type);
+}
+TEST(Parse, ParseArray)
+{
+    JsonArray ret;
+    lept_value val;
+    // val.setValue(std::string("123123"));
+    //  ret.push_back(val);
+    std::cout << "*********************" << std::endl;
+  //  lept_value vv(val);
+
+    testArray("[ null , false , true , 123 , \"abc\" ]", ret);
 }
 
 TEST(Std, StdVarent)

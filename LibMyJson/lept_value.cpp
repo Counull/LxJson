@@ -7,6 +7,8 @@ lept_value::lept_value()
 {
 }
 
+
+
 lept_value::~lept_value()
 {
 }
@@ -15,7 +17,7 @@ lept_result lept_value::parse(const std::string& json)
 {
 
     lept_context context(json);
-  
+
     context.parse_whithspace();
 
     auto ret = context.parse_value(*this);
