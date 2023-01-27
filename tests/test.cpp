@@ -1,9 +1,8 @@
-#include "lept_context.h"
 #include "lept_enum.h"
 #include "lept_value.h"
+#include <cstddef>
 #include <gtest/gtest.h>
 #include <string>
-#include <utility>
 using namespace std::string_literals;
 using namespace LxJson;
 
@@ -40,7 +39,6 @@ TEST(Parse, ParseFalse)
     lept_value v;
 
     ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse("false"));
-
     ASSERT_EQ(false, v.getValue<lept_type::LEPT_BOOLEAN>());
     ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(" \t \n \r \r\n  false"));
     ASSERT_EQ(false, v.getValue<lept_type::LEPT_BOOLEAN>());
@@ -131,15 +129,28 @@ void testArray(const std::string& json, JsonArray& array)
     ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
     auto type = v.getType();
     ASSERT_EQ(lept_type::LEPT_ARRAY, type);
+    auto ret = v.getValue<JsonArray>();
+     ASSERT_EQ(ret == array, false);
 }
+
+
+
 TEST(Parse, ParseArray)
 {
+
+ 
+
+    lept_value v1;
+    v1.setValue(123.f);
+    lept_value v2(v1);
     JsonArray ret;
-    lept_value val;
-    // val.setValue(std::string("123123"));
-    //  ret.push_back(val);
+    ret.emplace_back(nullptr);
+    ret.emplace_back(false);
+    ret.emplace_back(true);
+    ret.emplace_back(123);
+    ret.emplace_back("abc");
+    //  std::cout <<typeid(123) << std::endl;
     std::cout << "*********************" << std::endl;
-  //  lept_value vv(val);
 
     testArray("[ null , false , true , 123 , \"abc\" ]", ret);
 }

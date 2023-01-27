@@ -1,5 +1,6 @@
 #include "lept_value.h"
 #include "lept_context.h"
+#include <exception>
 #include <string>
 namespace LxJson {
 
@@ -7,12 +8,37 @@ lept_value::lept_value()
 {
 }
 
-
-
 lept_value::~lept_value()
 {
 }
 
+bool operator==(const lept_value& lhs, const lept_value& rhs)
+{
+    auto lhsType = lhs.getType();
+    if (lhsType != rhs.getType()) {
+        return false;
+    }
+
+    switch (lhsType) {
+
+    case lept_type::LEPT_BOOLEAN:
+        return lhs.getValue<lept_type::LEPT_BOOLEAN>() == rhs.getValue<lept_type::LEPT_BOOLEAN>();
+    case lept_type::LEPT_NULL:
+        return lhs.getValue<lept_type::LEPT_NULL>() == rhs.getValue<lept_type::LEPT_NULL>();
+    case lept_type::LEPT_NUMBER:
+        return lhs.getValue<lept_type::LEPT_NUMBER>() == rhs.getValue<lept_type::LEPT_NUMBER>();
+    case lept_type::LEPT_STRING:
+        return lhs.getValue<lept_type::LEPT_STRING>() == rhs.getValue<lept_type::LEPT_STRING>();
+    case lept_type::LEPT_ARRAY:
+        return lhs.getValue<lept_type::LEPT_ARRAY>() == rhs.getValue<lept_type::LEPT_ARRAY>();
+
+        /* case lept_type::LEPT_OBJECT:
+             return lhs.getValue<lept_type::LEPT_OBJECT>() == rhs.getValue<lept_type::LEPT_OBJECT>(); */
+    default:
+        throw std::exception("Json type not valid.");
+        break;
+    }
+}
 lept_result lept_value::parse(const std::string& json)
 {
 
@@ -29,4 +55,5 @@ lept_result lept_value::parse(const std::string& json)
     }
     return ret;
 }
+
 }

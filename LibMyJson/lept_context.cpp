@@ -222,12 +222,15 @@ lept_result LxJson::lept_context::parse_array(lept_value& value)
 
         parse_whithspace();
         auto c = json.front();
+        json.remove_prefix(1);
         if (c == ']') {
             value.setValue(finalArr);
             return lept_result::LEPT_PARSE_OK;
-        } else if (c != ',') {
-            return lept_result::LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
+        } else if (c == ',') {
+            continue;
         }
+
+        return lept_result::LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
     }
     return lept_result::LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
 }

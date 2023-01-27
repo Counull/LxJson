@@ -3,24 +3,29 @@
 #ifndef LEPT_VALUE_H
 #define LEPT_VALUE_H
 
-#include <exception>
-#include <iostream>
-#include <ostream>
-#include <tuple>
-#include <vector>
 #pragma once
 #include "lept_enum.h"
 #include <cassert>
 #include <cstddef>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <vector>
 #include <xtr1common>
 namespace LxJson {
 class lept_value;
 using JsonArray = std::vector<lept_value>;
 using JsonVal = std::variant<std::string, JsonArray, double, bool, nullptr_t>;
+
+template <typename T>
+concept ValidJsonType = std::_Is_any_of_v<typename std::decay_t<T>,
+                            nullptr_t, JsonArray, bool>
+    || std::is_convertible_v<typename std::decay_t<T>, std::string>
+    || std::is_convertible_v<typename std::decay_t<T>, double>;
+
+bool operator==(const lept_value& lhs, const lept_value& rhs);
 
 class lept_value {
 public:
@@ -29,39 +34,43 @@ public:
     lept_value(const lept_value& val) = default;
     lept_value& operator=(const lept_value& val) = default;
     lept_value& operator=(lept_value&& val) = default;
-    template <typename T>
-    lept_value(T&& val);
 
     ~lept_value();
-    lept_result parse(const std::string& json);
 
+    template <ValidJsonType T>
+    lept_value(T&& val)
+    {
+        setValue(std::forward<T>(val));
+    }
+
+    lept_result parse(const std::string& json);
     inline lept_type getType() const { return type; }
 
     /// 很显然这么写容易因为疏忽造成运行时错误
-    template <typename T>
+    template <ValidJsonType T>
     void setValue(T&& val)
-        requires(std::_Is_any_of_v<typename std::decay_t<T>,
-                     nullptr_t, std::string, JsonArray, char const*, char*, char[], bool>
-            || std::is_arithmetic_v<typename std::decay_t<T> >)
     {
-
-        v = std::forward<T>(val);
         type = lept_type::LEPT_NULL;
         if constexpr (std::is_same_v<typename std::decay_t<T>, nullptr_t>) {
             type = lept_type::LEPT_NULL;
-        } else if constexpr (std::_Is_any_of_v<typename std::decay_t<T>, std::string, char const*, char*, char[]>) {
+            v = val;
+        } else if constexpr (std::is_convertible_v<std::decay_t<T>, std::string>) {
             type = lept_type::LEPT_STRING;
+            v = std::forward<T>(val);
         } else if constexpr (std::is_same_v<typename std::decay_t<T>, bool>) {
             type = lept_type::LEPT_BOOLEAN;
-        } else if constexpr (std::is_arithmetic_v<typename std::decay_t<T>>) {
+            v = val;
+        } else if constexpr (std::is_convertible_v<typename std::decay_t<T>, double>) {
             type = lept_type::LEPT_NUMBER;
+            v = static_cast<double>(val);
         } else if constexpr (std::is_same_v<typename std::decay_t<T>, JsonArray>) {
             type = lept_type::LEPT_ARRAY;
+            v = std::forward<T>(val);
         }
     }
 
     template <lept_type Type>
-    auto getValue()
+    auto getValue() const
     {
         assert(Type == type);
         if constexpr (Type == lept_type::LEPT_NULL) {
@@ -76,23 +85,16 @@ public:
             return std::get<JsonArray>(v);
         }
     }
-    template <typename Type>
-    auto getValue()
+    template <ValidJsonType T>
+    auto getValue() const
     {
-        return std::get<Type>(v);
+        return std::get<T>(v);
     }
 
 private:
     JsonVal v;
     lept_type type;
 };
-
-template <typename T>
-inline lept_value::lept_value(T&& val)
-{
-    this->setValue(val);
-}
-
 }
 
 #endif
