@@ -145,10 +145,88 @@ TEST(Parse, ParseArray)
     ret.emplace_back(true);
     ret.emplace_back(123);
     ret.emplace_back("abc");
-    //  std::cout <<typeid(123) << std::endl;
-    std::cout << "*********************" << std::endl;
 
     testArray("[ null , false , true , 123 , \"abc\" ]", ret);
+
+    ret.clear();
+    ret.emplace_back(nullptr);
+    ret.emplace_back(false);
+    ret.emplace_back(JsonArray());
+    ret.emplace_back(123);
+    ret.emplace_back("abc");
+    testArray("[ null , false , [] , 123 , \"abc\" ]", ret);
+
+    auto inside = JsonArray();
+    ret.clear();
+    ret.emplace_back(nullptr);
+    ret.emplace_back(false);
+    inside.emplace_back(true);
+    //  inside.emplace_back(false);
+    ret.emplace_back(inside);
+    ret.emplace_back(123);
+    ret.emplace_back("abc");
+    testArray("[ null , false , [true] , 123 , \"abc\" ]", ret);
+}
+
+TEST(Parse, ParseObjectError)
+{
+    lept_value v;
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COLON, v.parse("{\"a\"}"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COLON, v.parse("{\"a\",\"b\"}"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COLON, v.parse("{\"a\"}"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COLON, v.parse("{\"a\""));
+
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_KEY, v.parse("{:1,"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_KEY, v.parse("{1:1,"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_KEY, v.parse("{true:1,"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_KEY, v.parse("{false:1,"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_KEY, v.parse("{[]:1,"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_KEY, v.parse("{{}:1,"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_KEY, v.parse("{\"a\":1,"));
+
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, v.parse("{"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, v.parse("{\"a\":1"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, v.parse("{\"a\":"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, v.parse("{\"a\":1]"));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, v.parse("{\"a\":1 \"b\""));
+    ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, v.parse("{\"a\":{}"));
+}
+
+void testObj(JsonMap map, const std::string& json)
+{
+    lept_value v;
+    ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
+    auto type = v.getType();
+    ASSERT_EQ(lept_type::LEPT_OBJECT, type);
+    auto ret = v.getValue<JsonMap>();
+    ASSERT_EQ(ret == map, true);
+}
+
+TEST(Parse, ParseObject)
+{
+    JsonMap map;
+    testObj(map, "{ }");
+    
+    map.emplace("s", "abc");
+    map.emplace("d", 1);
+    map.emplace("n", nullptr);
+    map.emplace("f", false);
+    map.emplace("t", true);
+    JsonArray inside;
+    inside.emplace_back(true);
+    inside.emplace_back(false);
+    inside.emplace_back(nullptr);
+    inside.emplace_back(1.5);
+    inside.emplace_back("abcad");
+    map.emplace("a", inside);
+    testObj(map,
+        R"({ "s":"abc",
+                "d":1,
+                "n":null,
+                "f":false,
+                "t":true,
+                "a":[true,false,null,1.5,"abcad"]
+                })");
 }
 
 TEST(Std, StdVarent)

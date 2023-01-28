@@ -31,7 +31,9 @@ private:
     lept_result parse_expr(lept_value& value);
     lept_result parse_number(lept_value& value);
     lept_result parse_string(lept_value& value);
+    lept_result parse_std_string(std::string& strOut);
     lept_result parse_array(lept_value& value);
+    lept_result parse_object(lept_value& value);
 };
 
 constexpr bool lept_context::isEmpty() noexcept

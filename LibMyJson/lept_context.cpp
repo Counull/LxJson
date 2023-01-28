@@ -12,6 +12,7 @@
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <utility>
 #include <vcruntime.h>
 #include <vector>
 
@@ -45,18 +46,16 @@ lept_result lept_context::parse_value(lept_value& value)
     switch (json.front()) {
     case 'n':
         return parse_expr<NULL_EXPR>(value);
-        break;
     case 't':
         return parse_expr<TRUE>(value);
-        break;
     case 'f':
         return parse_expr<FALSE>(value);
-        break;
     case '\"':
         return parse_string(value);
     case '[':
         return parse_array(value);
-        break;
+    case '{':
+        return parse_object(value);
     default:
         return parse_number(value);
     }
@@ -139,6 +138,16 @@ lept_result LxJson::lept_context::parse_number(lept_value& value)
 
 lept_result LxJson::lept_context::parse_string(lept_value& value)
 {
+    std::string retStr;
+    auto ret = parse_std_string(retStr);
+    if (ret == lept_result::LEPT_PARSE_OK) {
+        value.setValue(retStr);
+    }
+    return ret;
+}
+
+lept_result LxJson::lept_context::parse_std_string(std::string& strOut)
+{
     assert(json.front() == '\"');
     size_t p = 1;
     auto begin = ++json.begin();
@@ -184,8 +193,8 @@ lept_result LxJson::lept_context::parse_string(lept_value& value)
             if (!strBuffer) {
                 strBuffer = std::make_unique<std::string>(std::string { begin, iter });
             }
-            std::cout << strBuffer << std::endl;
-            value.setValue(std::move(*strBuffer));
+       
+            strOut = std::move(*strBuffer);
             json.remove_prefix(p);
             return lept_result::LEPT_PARSE_OK;
         }
@@ -196,8 +205,9 @@ lept_result LxJson::lept_context::parse_string(lept_value& value)
             if (escape != '\0') {
                 strBuffer->push_back(escape);
                 escape = '\0';
-            } else
+            } else {
                 strBuffer->push_back(*iter);
+            }
         }
     }
 
@@ -230,4 +240,64 @@ lept_result LxJson::lept_context::parse_array(lept_value& value)
         finalArr.push_back(std::move(val));
     }
     return lept_result::LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
+}
+
+lept_result LxJson::lept_context::parse_object(lept_value& value)
+{
+    assert(json.front() == '{');
+    json.remove_prefix(1);
+    parse_whithspace();
+
+    JsonMap map;
+    if (!json.empty()&& json.front() == '}') {
+        json.remove_prefix(1);
+        value.setValue(map);
+        return lept_result::LEPT_PARSE_OK;
+    }
+
+    while (json.length() > 0) {
+
+        if (json.front() != '\"') {
+            return lept_result::LEPT_PARSE_MISS_KEY;
+            break;
+        }
+        std::string key;
+
+        if (auto ret = parse_std_string(key); ret != lept_result::LEPT_PARSE_OK) {
+            break;
+        }
+        parse_whithspace();
+
+        if (json.empty() || json.front() != ':') {
+            return lept_result::LEPT_PARSE_MISS_COLON;
+            break;
+        }
+        json.remove_prefix(1);
+        parse_whithspace();
+        lept_value val;
+        if (auto ret = parse_value(val); ret != lept_result::LEPT_PARSE_OK) {
+            break;
+        }
+        map.emplace(std::move(key), std::move(val));
+
+        parse_whithspace();
+        if (json.empty()) {
+            return lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET;
+        }
+        if (json.front() == '}') {
+            json.remove_prefix(1);
+            value.setValue(map);
+            return lept_result::LEPT_PARSE_OK;
+        } else if (json.front() == ',') {
+            json.remove_prefix(1);
+            parse_whithspace();
+            if (json.empty()) {
+                return lept_result::LEPT_PARSE_MISS_KEY;
+            }
+        } else {
+            return lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET;
+        }
+    }
+
+    return lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET;
 }

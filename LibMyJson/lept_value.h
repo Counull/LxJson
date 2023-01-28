@@ -3,6 +3,7 @@
 #ifndef LEPT_VALUE_H
 #define LEPT_VALUE_H
 
+#include <unordered_map>
 #pragma once
 #include "lept_enum.h"
 #include <cassert>
@@ -17,11 +18,12 @@
 namespace LxJson {
 class lept_value;
 using JsonArray = std::vector<lept_value>;
-using JsonVal = std::variant<std::string, JsonArray, double, bool, nullptr_t>;
+using JsonMap = std::unordered_map<std::string, lept_value>;
+using JsonVal = std::variant<std::string, JsonArray, JsonMap, double, bool, nullptr_t>;
 
 template <typename T>
 concept ValidJsonType = std::_Is_any_of_v<typename std::decay_t<T>,
-                            nullptr_t, JsonArray, bool>
+                            bool, nullptr_t, JsonArray, JsonMap>
     || std::is_convertible_v<typename std::decay_t<T>, std::string>
     || std::is_convertible_v<typename std::decay_t<T>, double>;
 
@@ -54,17 +56,20 @@ public:
         if constexpr (std::is_same_v<typename std::decay_t<T>, nullptr_t>) {
             type = lept_type::LEPT_NULL;
             v = val;
-        } else if constexpr (std::is_convertible_v<std::decay_t<T>, std::string>) {
-            type = lept_type::LEPT_STRING;
-            v = std::forward<T>(val);
         } else if constexpr (std::is_same_v<typename std::decay_t<T>, bool>) {
             type = lept_type::LEPT_BOOLEAN;
             v = val;
         } else if constexpr (std::is_convertible_v<typename std::decay_t<T>, double>) {
             type = lept_type::LEPT_NUMBER;
             v = static_cast<double>(val);
+        } else if constexpr (std::is_convertible_v<std::decay_t<T>, std::string>) {
+            type = lept_type::LEPT_STRING;
+            v = std::forward<T>(val);
         } else if constexpr (std::is_same_v<typename std::decay_t<T>, JsonArray>) {
             type = lept_type::LEPT_ARRAY;
+            v = std::forward<T>(val);
+        } else if constexpr (std::is_same_v<typename std::decay_t<T>, JsonMap>) {
+            type = lept_type::LEPT_OBJECT;
             v = std::forward<T>(val);
         }
     }
@@ -83,6 +88,8 @@ public:
             return std::get<std::string>(v);
         } else if constexpr (Type == lept_type::LEPT_ARRAY) {
             return std::get<JsonArray>(v);
+        } else if constexpr (Type == lept_type::LEPT_OBJECT) {
+            return std::get<JsonMap>(v);
         }
     }
     template <ValidJsonType T>
@@ -92,8 +99,8 @@ public:
     }
 
 private:
-    JsonVal v;
-    lept_type type;
+    JsonVal v = nullptr;
+    lept_type type = lept_type::LEPT_NULL;
 };
 }
 
