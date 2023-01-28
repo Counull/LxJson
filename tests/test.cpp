@@ -130,15 +130,11 @@ void testArray(const std::string& json, JsonArray& array)
     auto type = v.getType();
     ASSERT_EQ(lept_type::LEPT_ARRAY, type);
     auto ret = v.getValue<JsonArray>();
-     ASSERT_EQ(ret == array, false);
+    ASSERT_EQ(ret == array, true);
 }
-
-
 
 TEST(Parse, ParseArray)
 {
-
- 
 
     lept_value v1;
     v1.setValue(123.f);

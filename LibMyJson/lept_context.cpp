@@ -213,24 +213,21 @@ lept_result LxJson::lept_context::parse_array(lept_value& value)
     while (json.length() > 0) {
 
         parse_whithspace();
+        auto c = json.front();
+        if (c == ']') {
+            json.remove_prefix(1);
+            value.setValue(finalArr);
+            return lept_result::LEPT_PARSE_OK;
+        } else if (c == ',') {
+            json.remove_prefix(1);
+            parse_whithspace();
+        }
 
         lept_value val;
         if (auto ret = parse_value(val); ret != lept_result::LEPT_PARSE_OK) {
             return ret;
         }
         finalArr.push_back(std::move(val));
-
-        parse_whithspace();
-        auto c = json.front();
-        json.remove_prefix(1);
-        if (c == ']') {
-            value.setValue(finalArr);
-            return lept_result::LEPT_PARSE_OK;
-        } else if (c == ',') {
-            continue;
-        }
-
-        return lept_result::LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
     }
     return lept_result::LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
 }
