@@ -15,6 +15,7 @@ enum class lept_type {
 
 enum class lept_result {
     LEPT_PARSE_OK,
+    LEPT_STRINGIFY_OK,
     LEPT_PARSE_EXPECT_VALUE,
     LEPT_PARSE_INVALID_VALUE,
     LEPT_PARSE_NUMBER_TOO_BIG,

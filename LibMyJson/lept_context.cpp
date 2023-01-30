@@ -45,11 +45,11 @@ lept_result lept_context::parse_value(lept_value& value)
 
     switch (json.front()) {
     case 'n':
-        return parse_expr<NULL_EXPR>(value);
+        return parse_expr<lept_value::NULL_EXPR>(value);
     case 't':
-        return parse_expr<TRUE>(value);
+        return parse_expr<lept_value::TRUE>(value);
     case 'f':
-        return parse_expr<FALSE>(value);
+        return parse_expr<lept_value::FALSE>(value);
     case '\"':
         return parse_string(value);
     case '[':
@@ -75,11 +75,11 @@ lept_result lept_context::parse_expr(lept_value& value)
         }
     }
 
-    if constexpr (E == NULL_EXPR) {
+    if constexpr (E == lept_value::NULL_EXPR) {
         value.setValue(nullptr);
-    } else if constexpr (E == TRUE) {
+    } else if constexpr (E == lept_value::TRUE) {
         value.setValue(true);
-    } else if constexpr (E == FALSE) {
+    } else if constexpr (E == lept_value::FALSE) {
 
         value.setValue(false);
     }
@@ -141,7 +141,7 @@ lept_result LxJson::lept_context::parse_string(lept_value& value)
     std::string retStr;
     auto ret = parse_std_string(retStr);
     if (ret == lept_result::LEPT_PARSE_OK) {
-        value.setValue(retStr);
+        value.setValue(std ::move(retStr));
     }
     return ret;
 }
@@ -193,7 +193,7 @@ lept_result LxJson::lept_context::parse_std_string(std::string& strOut)
             if (!strBuffer) {
                 strBuffer = std::make_unique<std::string>(std::string { begin, iter });
             }
-       
+
             strOut = std::move(*strBuffer);
             json.remove_prefix(p);
             return lept_result::LEPT_PARSE_OK;
@@ -237,7 +237,7 @@ lept_result LxJson::lept_context::parse_array(lept_value& value)
         if (auto ret = parse_value(val); ret != lept_result::LEPT_PARSE_OK) {
             return ret;
         }
-        finalArr.push_back(std::move(val));
+        finalArr.emplace_back(std::move(val));
     }
     return lept_result::LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
 }
@@ -248,8 +248,8 @@ lept_result LxJson::lept_context::parse_object(lept_value& value)
     json.remove_prefix(1);
     parse_whithspace();
 
-    JsonMap map;
-    if (!json.empty()&& json.front() == '}') {
+    JsonObject map;
+    if (!json.empty() && json.front() == '}') {
         json.remove_prefix(1);
         value.setValue(map);
         return lept_result::LEPT_PARSE_OK;

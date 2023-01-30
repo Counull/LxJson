@@ -20,9 +20,7 @@ public:
     constexpr bool isEmpty() noexcept;
 
     //  static constexpr std::string_view NULL_EXPR = std::string_view("null");
-    static constexpr char TRUE[] = "true";
-    static constexpr char FALSE[] = "false";
-    static constexpr char NULL_EXPR[] = "null";
+  
 
 private:
     std::string_view json;

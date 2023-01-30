@@ -2,7 +2,9 @@
 #include "lept_value.h"
 #include <cstddef>
 #include <gtest/gtest.h>
+#include <iostream>
 #include <string>
+#include <utility>
 using namespace std::string_literals;
 using namespace LxJson;
 
@@ -192,21 +194,21 @@ TEST(Parse, ParseObjectError)
     ASSERT_EQ(lept_result::LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET, v.parse("{\"a\":{}"));
 }
 
-void testObj(JsonMap map, const std::string& json)
+void testObj(JsonObject map, const std::string& json)
 {
     lept_value v;
     ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
     auto type = v.getType();
     ASSERT_EQ(lept_type::LEPT_OBJECT, type);
-    auto ret = v.getValue<JsonMap>();
+    auto ret = v.getValue<JsonObject>();
     ASSERT_EQ(ret == map, true);
 }
 
 TEST(Parse, ParseObject)
 {
-    JsonMap map;
+    JsonObject map;
     testObj(map, "{ }");
-    
+
     map.emplace("s", "abc");
     map.emplace("d", 1);
     map.emplace("n", nullptr);
@@ -218,15 +220,34 @@ TEST(Parse, ParseObject)
     inside.emplace_back(nullptr);
     inside.emplace_back(1.5);
     inside.emplace_back("abcad");
-    map.emplace("a", inside);
+    map.emplace("a", std::move(inside));
     testObj(map,
-        R"({ "s":"abc",
-                "d":1,
-                "n":null,
-                "f":false,
-                "t":true,
-                "a":[true,false,null,1.5,"abcad"]
+        R"({  "s":"abc",
+                    "d":1,
+                    "n":null,
+                    "f":false,
+                    "t":true,
+                    "a":[true,false,null,1.5,"abcad"]
                 })");
+}
+
+void testStringify(const std::string& json)
+{
+    lept_value v;
+    ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
+    std::string ret;
+    ASSERT_EQ(lept_result::LEPT_STRINGIFY_OK, v.stringify(ret));
+    std::cout << "    ****"<<json << " ***" << ret << std::endl;
+    ASSERT_STREQ(ret.c_str(), json.c_str());
+}
+
+TEST(Stringify, Stringify)
+{
+    testStringify("null");
+    testStringify("true");
+    testStringify("false");
+    testStringify(R"("123123")");
+    testStringify("1.565656");
 }
 
 TEST(Std, StdVarent)

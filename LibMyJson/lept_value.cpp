@@ -1,6 +1,9 @@
 #include "lept_value.h"
 #include "lept_context.h"
+#include "lept_stringify.h"
 #include <exception>
+#include <iostream>
+
 #include <string>
 namespace LxJson {
 
@@ -39,6 +42,7 @@ bool operator==(const lept_value& lhs, const lept_value& rhs)
         break;
     }
 }
+
 lept_result lept_value::parse(const std::string& json)
 {
 
@@ -54,6 +58,18 @@ lept_result lept_value::parse(const std::string& json)
         }
     }
     return ret;
+}
+
+lept_result lept_value::stringify(std::string& jsonOut)
+{
+    lept_stringify stringify;
+    if (auto ret = stringify.stringify(*this); ret != lept_result::LEPT_STRINGIFY_OK) {
+        return ret;
+    }
+    std::cout << *stringify.json << "***********" << std::endl;
+    jsonOut = std::move(*stringify.json);
+    std::cout << jsonOut << std::endl;
+    return lept_result::LEPT_STRINGIFY_OK;
 }
 
 }

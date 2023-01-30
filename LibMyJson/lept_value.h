@@ -18,12 +18,12 @@
 namespace LxJson {
 class lept_value;
 using JsonArray = std::vector<lept_value>;
-using JsonMap = std::unordered_map<std::string, lept_value>;
-using JsonVal = std::variant<std::string, JsonArray, JsonMap, double, bool, nullptr_t>;
+using JsonObject = std::unordered_map<std::string, lept_value>;
+using JsonVal = std::variant<std::string, JsonArray, JsonObject, double, bool, nullptr_t>;
 
 template <typename T>
 concept ValidJsonType = std::_Is_any_of_v<typename std::decay_t<T>,
-                            bool, nullptr_t, JsonArray, JsonMap>
+                            bool, nullptr_t, JsonArray, JsonObject>
     || std::is_convertible_v<typename std::decay_t<T>, std::string>
     || std::is_convertible_v<typename std::decay_t<T>, double>;
 
@@ -31,6 +31,15 @@ bool operator==(const lept_value& lhs, const lept_value& rhs);
 
 class lept_value {
 public:
+    static constexpr char TRUE[] = "true";
+    static constexpr char FALSE[] = "false";
+    static constexpr char NULL_EXPR[] = "null";
+
+    template <ValidJsonType T>
+    lept_value(T&& val)
+    {
+        setValue(std::forward<T>(val));
+    }
     lept_value();
     lept_value(lept_value&& val) = default;
     lept_value(const lept_value& val) = default;
@@ -39,15 +48,10 @@ public:
 
     ~lept_value();
 
-    template <ValidJsonType T>
-    lept_value(T&& val)
-    {
-        setValue(std::forward<T>(val));
-    }
-
     lept_result parse(const std::string& json);
-    inline lept_type getType() const { return type; }
 
+    lept_result stringify(std::string& jsonOut);
+    inline lept_type getType() const { return type; }
     /// 很显然这么写容易因为疏忽造成运行时错误
     template <ValidJsonType T>
     void setValue(T&& val)
@@ -68,12 +72,11 @@ public:
         } else if constexpr (std::is_same_v<typename std::decay_t<T>, JsonArray>) {
             type = lept_type::LEPT_ARRAY;
             v = std::forward<T>(val);
-        } else if constexpr (std::is_same_v<typename std::decay_t<T>, JsonMap>) {
+        } else if constexpr (std::is_same_v<typename std::decay_t<T>, JsonObject>) {
             type = lept_type::LEPT_OBJECT;
             v = std::forward<T>(val);
         }
     }
-
     template <lept_type Type>
     auto getValue() const
     {
@@ -89,7 +92,7 @@ public:
         } else if constexpr (Type == lept_type::LEPT_ARRAY) {
             return std::get<JsonArray>(v);
         } else if constexpr (Type == lept_type::LEPT_OBJECT) {
-            return std::get<JsonMap>(v);
+            return std::get<JsonObject>(v);
         }
     }
     template <ValidJsonType T>
