@@ -117,6 +117,7 @@ void testStr(const std::string& except, const std::string& json)
 }
 TEST(Parse, ParseString)
 {
+    testStr("\rul", R"("\rul")");
     testStr("abc", "\"abc\"");
     testStr("", "\"\"");
     testStr("abc", "    \"abc\"");
@@ -132,7 +133,7 @@ void testArray(const std::string& json, JsonArray& array)
     auto type = v.getType();
     ASSERT_EQ(lept_type::LEPT_ARRAY, type);
     auto ret = v.getValue<JsonArray>();
-    ASSERT_EQ(ret == array, true);
+    ASSERT_TRUE(ret == array);
 }
 
 TEST(Parse, ParseArray)
@@ -233,11 +234,20 @@ TEST(Parse, ParseObject)
 
 void testStringify(const std::string& json)
 {
+
     lept_value v;
     ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
-    std::string ret;
-    ASSERT_EQ(lept_result::LEPT_STRINGIFY_OK, v.stringify(ret));
-    ASSERT_STREQ(ret.c_str(), json.c_str());
+    std::string str1;
+    ASSERT_EQ(lept_result::LEPT_STRINGIFY_OK, v.stringify(str1));
+
+    v.parse(str1);
+
+    std::string str2;
+    v.stringify(str2);
+    lept_value v2;
+    v2.parse(str2);
+
+    ASSERT_TRUE(v == v2);
 }
 
 TEST(Stringify, Stringify)
@@ -246,8 +256,13 @@ TEST(Stringify, Stringify)
     testStringify("true");
     testStringify("false");
     testStringify(R"("123123")");
-    testStringify(R"("1231\n23")");
+    testStringify(R"("1231\null23")");
     testStringify("1.565656");
+
+    testStringify(R"(["asdasd\n {}[]",0.000000,true,false,null])");
+    testStringify(R"({"array":["asdasd\n {}[]",0.000000,true,false,null]})");
+    testStringify(R"({"15asd":true,"77&&7ad":false,"\null":null,"double 666":44.123456})");
+    testStringify(R"({"array":["asdasd\n {}[]",0.000000,true,false,null],"15asd":true,"77&&7ad":false,"\null":null,"double 666":44.123456})");
 }
 
 TEST(Std, StdVarent)

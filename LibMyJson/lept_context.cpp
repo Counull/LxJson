@@ -159,7 +159,10 @@ lept_result LxJson::lept_context::parse_std_string(std::string& strOut)
         switch (*iter) {
         case '\\':
             p++;
-
+            if (!strBuffer) {
+                strBuffer = std::make_unique<std::string>(std::string { begin, iter });
+            }
+            
             switch (*++iter) {
             case '\"':
                 escape = '\"';
@@ -193,14 +196,11 @@ lept_result LxJson::lept_context::parse_std_string(std::string& strOut)
             if (!strBuffer) {
                 strBuffer = std::make_unique<std::string>(std::string { begin, iter });
             }
-
             strOut = std::move(*strBuffer);
             json.remove_prefix(p);
             return lept_result::LEPT_PARSE_OK;
         }
-        if (!strBuffer) {
-            strBuffer = std::make_unique<std::string>(std::string { begin, iter });
-        }
+
         if (strBuffer) {
             if (escape != '\0') {
                 strBuffer->push_back(escape);

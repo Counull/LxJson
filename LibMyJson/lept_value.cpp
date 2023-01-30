@@ -35,8 +35,8 @@ bool operator==(const lept_value& lhs, const lept_value& rhs)
     case lept_type::LEPT_ARRAY:
         return lhs.getValue<lept_type::LEPT_ARRAY>() == rhs.getValue<lept_type::LEPT_ARRAY>();
 
-        /* case lept_type::LEPT_OBJECT:
-             return lhs.getValue<lept_type::LEPT_OBJECT>() == rhs.getValue<lept_type::LEPT_OBJECT>(); */
+        case lept_type::LEPT_OBJECT:
+             return lhs.getValue<lept_type::LEPT_OBJECT>() == rhs.getValue<lept_type::LEPT_OBJECT>(); 
     default:
         throw std::exception("Json type not valid.");
         break;
@@ -62,12 +62,13 @@ lept_result lept_value::parse(const std::string& json)
 
 lept_result lept_value::stringify(std::string& jsonOut)
 {
+
     lept_stringify stringify;
     if (auto ret = stringify.stringify(*this); ret != lept_result::LEPT_STRINGIFY_OK) {
         return ret;
     }
-    jsonOut = std::move(*stringify.json);
-     return lept_result::LEPT_STRINGIFY_OK;
+    jsonOut = std::move(stringify.json);
+    return lept_result::LEPT_STRINGIFY_OK;
 }
 
 }
