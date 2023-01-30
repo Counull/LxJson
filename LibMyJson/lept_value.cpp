@@ -66,10 +66,8 @@ lept_result lept_value::stringify(std::string& jsonOut)
     if (auto ret = stringify.stringify(*this); ret != lept_result::LEPT_STRINGIFY_OK) {
         return ret;
     }
-    std::cout << *stringify.json << "***********" << std::endl;
     jsonOut = std::move(*stringify.json);
-    std::cout << jsonOut << std::endl;
-    return lept_result::LEPT_STRINGIFY_OK;
+     return lept_result::LEPT_STRINGIFY_OK;
 }
 
 }

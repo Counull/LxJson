@@ -237,7 +237,6 @@ void testStringify(const std::string& json)
     ASSERT_EQ(lept_result::LEPT_PARSE_OK, v.parse(json));
     std::string ret;
     ASSERT_EQ(lept_result::LEPT_STRINGIFY_OK, v.stringify(ret));
-    std::cout << "    ****"<<json << " ***" << ret << std::endl;
     ASSERT_STREQ(ret.c_str(), json.c_str());
 }
 
@@ -247,6 +246,7 @@ TEST(Stringify, Stringify)
     testStringify("true");
     testStringify("false");
     testStringify(R"("123123")");
+    testStringify(R"("1231\n23")");
     testStringify("1.565656");
 }
 
@@ -260,7 +260,7 @@ TEST(Std, StdVarent)
     v.setValue("123213"s);
     ASSERT_EQ(v.getType(), lept_type::LEPT_STRING);
     ASSERT_EQ(v.getValue<lept_type::LEPT_STRING>(), "123213"s);
-    v.setValue("123213");
+    v.setValue("123213"s);
     ASSERT_EQ(v.getType(), lept_type::LEPT_STRING);
     ASSERT_EQ(v.getValue<lept_type::LEPT_STRING>(), "123213"s);
 }
