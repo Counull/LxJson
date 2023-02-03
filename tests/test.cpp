@@ -241,12 +241,11 @@ void testStringify(const std::string& json)
     ASSERT_EQ(lept_result::LEPT_STRINGIFY_OK, v.stringify(str1));
 
     v.parse(str1);
-
     std::string str2;
     v.stringify(str2);
+
     lept_value v2;
     v2.parse(str2);
-
     ASSERT_TRUE(v == v2);
 }
 

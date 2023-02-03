@@ -162,7 +162,7 @@ lept_result LxJson::lept_context::parse_std_string(std::string& strOut)
             if (!strBuffer) {
                 strBuffer = std::make_unique<std::string>(std::string { begin, iter });
             }
-            
+
             switch (*++iter) {
             case '\"':
                 escape = '\"';
